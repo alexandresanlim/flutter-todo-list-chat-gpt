@@ -55,15 +55,34 @@ class _TodoListState extends State<TodoItemListView> {
     return ListView.builder(
       itemCount: _todoList.length,
       itemBuilder: (context, index) {
-        final task = _todoList[index];
-        return ListTile(
-          title: Text(task.name),
-          trailing: Checkbox(
-            value: task.isCompleted,
-            onChanged: (value) {
+        return Card(
+          elevation: 2,
+          margin: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          child: ListTile(
+            contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            title: Text(
+              _todoList[index].name,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color:
+                    _todoList[index].isCompleted ? Colors.grey : Colors.black,
+                decoration: _todoList[index].isCompleted
+                    ? TextDecoration.lineThrough
+                    : TextDecoration.none,
+              ),
+            ),
+            trailing: Icon(
+              _todoList[index].isCompleted
+                  ? Icons.check_box
+                  : Icons.check_box_outline_blank,
+              color: _todoList[index].isCompleted ? Colors.grey : Colors.black,
+            ),
+            onTap: () {
               setState(() {
-                task.isCompleted = value!;
-                DatabaseHelper.instance.updateTask(task);
+                _todoList[index].isCompleted = !_todoList[index].isCompleted;
+                DatabaseHelper.instance.updateTask(_todoList[index]);
+                _getTasks();
               });
             },
           ),
@@ -112,7 +131,7 @@ class _TodoListState extends State<TodoItemListView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Todo List'),
+        title: Text('ChatGPT ToDo List'),
       ),
       body: Column(
         children: [
@@ -128,11 +147,12 @@ class _TodoListState extends State<TodoItemListView> {
           Expanded(
             child: _buildTodoList(),
           ),
-          FloatingActionButton(
-            onPressed: _showAddTaskDialog,
-            child: Icon(Icons.add),
-          )
         ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _showAddTaskDialog,
+        icon: const Icon(Icons.add),
+        label: const Text('Adicionar'),
       ),
     );
   }
