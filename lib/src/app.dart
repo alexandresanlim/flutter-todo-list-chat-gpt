@@ -74,7 +74,7 @@ class MyApp extends StatelessWidget {
                     return const SampleItemDetailsView();
                   case TodoItemListView.routeName:
                   default:
-                    return const TodoItemListView();
+                    return TodoItemListView();
                 }
               },
             );
