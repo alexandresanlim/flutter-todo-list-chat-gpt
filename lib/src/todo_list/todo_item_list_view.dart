@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:todo_list_chat_gpt/src/todo_list/todo.dart';
 
+import '../api/chatgpt_client.dart';
 import '../data/database_helper.dart';
 import '../sample_feature/sample_item.dart';
 import '../sample_feature/sample_item_details_view.dart';
@@ -93,6 +94,7 @@ class _TodoListState extends State<TodoItemListView> {
 
   void _showAddTaskDialog() {
     TextEditingController titleController = TextEditingController();
+    String generatedMessage = '';
 
     showDialog(
       context: context,
@@ -112,6 +114,11 @@ class _TodoListState extends State<TodoItemListView> {
             TextButton(
               child: Text('Adicionar'),
               onPressed: () async {
+                final response =
+                    await getChatResponse(titleController.text.trim());
+
+                    
+
                 Todo task = Todo(
                     name: titleController.text.trim(),
                     isCompleted: false,
