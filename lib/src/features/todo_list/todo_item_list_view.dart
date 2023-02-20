@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart';
 import 'package:todo_list_chat_gpt/src/features/category_items/category_item.dart';
 import 'package:todo_list_chat_gpt/src/features/todo_list/todo.dart';
 import '../../api/chatgpt_client.dart';
@@ -17,6 +16,7 @@ class TodoItemListView extends StatefulWidget {
 class _TodoListState extends State<TodoItemListView> {
   List<Todo> _todoList = [];
   CategoryItem? _currentCategoryItem;
+  String _startPrompt = '';
   bool isLoading = false;
 
   @override
@@ -27,6 +27,7 @@ class _TodoListState extends State<TodoItemListView> {
           <String, dynamic>{}) as Map;
 
       final int categoryItemId = int.parse(arguments['itemId'] as String);
+      _startPrompt = arguments['startPrompt'] as String;
 
       _currentCategoryItem =
           await DatabaseHelper.instance.getCategoryItemById(categoryItemId);
@@ -44,32 +45,36 @@ class _TodoListState extends State<TodoItemListView> {
         setState(() {
           isLoading = true;
         });
-        final ChatMessage response =
-            await getChatResponse(_currentCategoryItem!.title);
+        final ChatMessage response = await getChatResponse(
+            '$_startPrompt ${_currentCategoryItem!.title}');
 
-        for (String line in response.firstSteps) {
-          final Todo task = Todo(
-              name: line,
-              isCompleted: false,
-              categoryItemId: _currentCategoryItem?.id ?? 0,
-              id: DateTime.now().microsecondsSinceEpoch);
+        if (response.firstSteps.isNotEmpty) {
+          for (String line in response.firstSteps) {
+            final Todo task = Todo(
+                name: line,
+                isCompleted: false,
+                categoryItemId: _currentCategoryItem?.id ?? 0,
+                id: DateTime.now().microsecondsSinceEpoch);
 
-          await DatabaseHelper.instance.insertTask(task);
-
-          setState(() {
-            isLoading = false;
-          });
+            await DatabaseHelper.instance.insertTask(task);
+          }
         }
 
-        for (String line in response.steps) {
-          final Todo task = Todo(
-              name: line,
-              isCompleted: false,
-              categoryItemId: _currentCategoryItem?.id ?? 0,
-              id: DateTime.now().microsecondsSinceEpoch);
+        if (response.steps.isNotEmpty) {
+          for (String line in response.steps) {
+            final Todo task = Todo(
+                name: line,
+                isCompleted: false,
+                categoryItemId: _currentCategoryItem?.id ?? 0,
+                id: DateTime.now().microsecondsSinceEpoch);
 
-          await DatabaseHelper.instance.insertTask(task);
+            await DatabaseHelper.instance.insertTask(task);
+          }
         }
+
+        setState(() {
+          isLoading = false;
+        });
 
         _getTasks();
       }

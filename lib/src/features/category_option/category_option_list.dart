@@ -7,14 +7,27 @@ class CategorieListView extends StatelessWidget {
   const CategorieListView({
     super.key,
     this.items = const [
-      CategoryOption(1, 'Receita', 'Minhas Receitas',
-          'Crie uma lista de a fazer para receitas', CategoryOptionType.recipe),
+      CategoryOption(
+          1,
+          'Receitas',
+          'Minhas receitas',
+          'Crie uma lista de afazeres para suas receitas favoritas',
+          'Escreva uma receita para',
+          'Bolo de cenoura'),
       CategoryOption(
           2,
-          'Plano de estudo',
-          'Meus Planos de estudo',
-          'Crie uma lista de a fazer estudar um determinado tema',
-          CategoryOptionType.studyPlan)
+          'Planos de estudo',
+          'Meus planos de estudo',
+          'Crie uma lista de afazeres para estudar um determinado tema',
+          'Quais os pontos eu deveria saber para estudar',
+          'Império romano'),
+      CategoryOption(
+          3,
+          'Tarefas',
+          'Minhas tarefas',
+          'Crie uma lista de afazeres para tarefas do seu cotidiano',
+          'Crie uma lista de tarefas para',
+          'Limpar a casa')
     ],
   });
 
@@ -64,7 +77,9 @@ class CategorieListView extends StatelessWidget {
                     CategoryItemListPage.routeName,
                     arguments: {
                       'categoryId': categoryId,
-                      'titlePage': item.titlePage
+                      'titlePage': item.titlePage,
+                      'startPrompt': item.startPrompt,
+                      'placeHolder': item.placeHolder
                     },
                   );
                 }),

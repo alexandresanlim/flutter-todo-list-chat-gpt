@@ -15,6 +15,8 @@ class _CategoryItemListPageState extends State<CategoryItemListPage> {
   List<CategoryItem> _items = [];
   int _currentCategory = 0;
   String _titlePage = '';
+  String _startPrompt = '';
+  String _placeHolder = '';
 
   @override
   void initState() {
@@ -26,6 +28,8 @@ class _CategoryItemListPageState extends State<CategoryItemListPage> {
 
       _currentCategory = int.parse(arguments['categoryId'] as String);
       _titlePage = arguments['titlePage'] as String;
+      _startPrompt = arguments['startPrompt'] as String;
+      _placeHolder = arguments['placeHolder'] as String;
 
       _getTasks();
     });
@@ -33,17 +37,16 @@ class _CategoryItemListPageState extends State<CategoryItemListPage> {
 
   void _showAddTaskDialog() {
     TextEditingController titleController = TextEditingController();
-    String generatedMessage = '';
 
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Nova Receita'),
+          title: const Text('Adicionar'),
           content: TextField(
             autofocus: true,
             controller: titleController,
-            decoration: const InputDecoration(hintText: 'Ex: Bolo de cenoura'),
+            decoration: InputDecoration(hintText: 'Ex: $_placeHolder'),
           ),
           actions: <Widget>[
             TextButton(
@@ -125,7 +128,7 @@ class _CategoryItemListPageState extends State<CategoryItemListPage> {
               Navigator.restorablePushNamed(
                 context,
                 TodoItemListView.routeName,
-                arguments: {'itemId': itemId},
+                arguments: {'itemId': itemId, 'startPrompt': _startPrompt},
               );
             },
           ),

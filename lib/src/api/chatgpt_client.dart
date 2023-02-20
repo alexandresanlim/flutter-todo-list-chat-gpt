@@ -19,8 +19,6 @@ class ChatMessage {
 }
 
 Future<ChatMessage> getChatResponse(String input) async {
-  input = "Escreva uma receita para $input";
-
   final response = await http.post(
     Uri.parse('https://api.openai.com/v1/engines/text-davinci-003/completions'),
     headers: {

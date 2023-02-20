@@ -1,7 +1,7 @@
 /// A placeholder class that represents an entity or model.
 class CategoryOption {
   const CategoryOption(this.id, this.title, this.titlePage, this.description,
-      this.categorieType);
+      this.startPrompt, this.placeHolder);
 
   final int id;
 
@@ -11,10 +11,7 @@ class CategoryOption {
 
   final String description;
 
-  final CategoryOptionType categorieType;
-}
+  final String startPrompt;
 
-enum CategoryOptionType {
-  recipe,
-  studyPlan,
+  final String placeHolder;
 }
