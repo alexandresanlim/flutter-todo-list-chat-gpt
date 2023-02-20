@@ -1,21 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:todo_list_chat_gpt/src/todo_list/todo.dart';
-
-import '../api/chatgpt_client.dart';
-import '../data/database_helper.dart';
-import '../sample_feature/sample_item.dart';
-import '../sample_feature/sample_item_details_view.dart';
-import '../settings/settings_view.dart';
+import 'package:todo_list_chat_gpt/src/features/todo_list/todo.dart';
+import '../../api/chatgpt_client.dart';
+import '../../data/database_helper.dart';
 
 class TodoItemListView extends StatefulWidget {
   @override
   _TodoListState createState() => _TodoListState();
-  static const routeName = '/';
+  static const routeName = '/todo_item_list';
 }
 
 /// Displays a list of SampleItems.
 class _TodoListState extends State<TodoItemListView> {
   List<Todo> _todoList = [];
+  bool isLoading = false;
 
   @override
   void initState() {
@@ -50,6 +47,60 @@ class _TodoListState extends State<TodoItemListView> {
     setState(() {
       _todoList[index].isCompleted = !_todoList[index].isCompleted;
     });
+  }
+
+  void _showAddTaskDialog() {
+    TextEditingController titleController = TextEditingController();
+    String generatedMessage = '';
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Nova Tarefa'),
+          content: TextField(
+            autofocus: true,
+            controller: titleController,
+            decoration: const InputDecoration(hintText: 'Título'),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancelar'),
+              onPressed: () => Navigator.pop(context),
+            ),
+            TextButton(
+              child: const Text('Adicionar'),
+              onPressed: () async {
+                Navigator.pop(context);
+
+                final String text = titleController.text.trim();
+
+                if (text.isEmpty) return;
+
+                setState(() {
+                  isLoading = true;
+                });
+
+                final response = await getChatResponse(text);
+
+                Todo task = Todo(
+                    name: titleController.text.trim(),
+                    isCompleted: false,
+                    id: DateTime.now().microsecondsSinceEpoch);
+
+                await DatabaseHelper.instance.insertTask(task);
+
+                _getTasks();
+
+                setState(() {
+                  isLoading = false;
+                });
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Widget _buildTodoList() {
@@ -92,70 +143,37 @@ class _TodoListState extends State<TodoItemListView> {
     );
   }
 
-  void _showAddTaskDialog() {
-    TextEditingController titleController = TextEditingController();
-    String generatedMessage = '';
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Nova Tarefa'),
-          content: TextField(
-            autofocus: true,
-            controller: titleController,
-            decoration: InputDecoration(hintText: 'Título'),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: Text('Cancelar'),
-              onPressed: () => Navigator.pop(context),
-            ),
-            TextButton(
-              child: Text('Adicionar'),
-              onPressed: () async {
-                final response =
-                    await getChatResponse(titleController.text.trim());
-
-                    
-
-                Todo task = Todo(
-                    name: titleController.text.trim(),
-                    isCompleted: false,
-                    id: DateTime.now().microsecondsSinceEpoch);
-                await DatabaseHelper.instance.insertTask(task);
-                _getTasks();
-                Navigator.pop(context);
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('ChatGPT ToDo List'),
       ),
-      body: Column(
-        children: [
-          TextField(
-            onSubmitted: (String taskName) {
-              _addTodoItem(taskName);
-            },
-            decoration: InputDecoration(
-              hintText: 'Enter a task',
-              contentPadding: EdgeInsets.all(16.0),
+      body: Stack(children: [
+        Column(
+          children: [
+            TextField(
+              onSubmitted: (String taskName) {
+                _addTodoItem(taskName);
+              },
+              decoration: InputDecoration(
+                hintText: 'Enter a task',
+                contentPadding: EdgeInsets.all(16.0),
+              ),
             ),
-          ),
-          Expanded(
-            child: _buildTodoList(),
-          ),
-        ],
-      ),
+            Expanded(
+              child: _buildTodoList(),
+            ),
+          ],
+        ),
+        if (isLoading)
+          Container(
+            color: Colors.black.withOpacity(0.5),
+            child: Center(
+              child: CircularProgressIndicator(),
+            ),
+          )
+      ]),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _showAddTaskDialog,
         icon: const Icon(Icons.add),

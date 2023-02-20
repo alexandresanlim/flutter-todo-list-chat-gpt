@@ -1,14 +1,9 @@
-import 'package:flutter/material.dart';
-
 class Todo {
   final String name;
   bool isCompleted;
   int id;
 
-  Todo(
-      {required this.name,
-      this.isCompleted = false,
-      this.id = 0});
+  Todo({required this.name, this.isCompleted = false, this.id = 0});
 
   Map<String, dynamic> toMap() {
     return {
