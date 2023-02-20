@@ -142,8 +142,11 @@ class _TodoListState extends State<TodoItemListView> {
         if (isLoading)
           Container(
             color: Colors.black.withOpacity(0.5),
-            child: Center(
-              child: CircularProgressIndicator(),
+            child: const Center(
+              child: CircularProgressIndicator(
+                semanticsLabel: 'Gerando lista através do ChatGPT 🤖',
+                semanticsValue: 'teste teste teste',
+              ),
             ),
           )
       ]),
