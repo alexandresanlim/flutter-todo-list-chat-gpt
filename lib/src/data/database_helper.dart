@@ -5,14 +5,15 @@ import 'dart:io';
 import 'package:path/path.dart';
 
 class DatabaseHelper {
-  static final _databaseName = 'todo_database.db';
-  static final _databaseVersion = 1;
+  static const _databaseName = 'todo_database.db';
+  static const _databaseVersion = 1;
 
-  static final table = 'tasks';
+  static const table = 'tasks';
 
-  static final columnId = 'id';
-  static final columnTitle = 'name';
-  static final columnIsDone = 'isCompleted';
+  static const columnId = 'id';
+  static const columnCategoryItemId = 'categoryItemId';
+  static const columnTitle = 'name';
+  static const columnIsDone = 'isCompleted';
 
   static final DatabaseHelper instance = DatabaseHelper._instance();
 
@@ -36,6 +37,7 @@ class DatabaseHelper {
     await db.execute('''
       CREATE TABLE $table (
         $columnId INTEGER PRIMARY KEY autoincrement,
+        $columnCategoryItemId INTEGER NOT NULL,
         $columnTitle TEXT NOT NULL,
         $columnIsDone INTEGER NOT NULL
       )
@@ -58,6 +60,15 @@ class DatabaseHelper {
   Future<List<Todo>> getTasks() async {
     Database db = await database;
     List<Map<String, dynamic>> maps = await db.query(table);
+    return List.generate(maps.length, (i) {
+      return Todo.fromMap(maps[i]);
+    });
+  }
+
+  Future<List<Todo>> getTasksByCategoryItemId(int categoryItemId) async {
+    Database db = await database;
+    List<Map<String, dynamic>> maps = await db.query(table,
+        where: '$columnCategoryItemId = ?', whereArgs: [categoryItemId]);
     return List.generate(maps.length, (i) {
       return Todo.fromMap(maps[i]);
     });
@@ -97,6 +108,18 @@ class DatabaseHelper {
     return List.generate(maps.length, (i) {
       return CategoryItem.fromMap(maps[i]);
     });
+  }
+
+  Future<CategoryItem?> getCategoryItemById(int id) async {
+    Database db = await database;
+    List<Map<String, dynamic>> maps = await db.query(CategoryItem.tableCategory,
+        where: '$columnId = ?', whereArgs: [id]);
+
+    if (maps.isNotEmpty) {
+      return CategoryItem.fromMap(maps.first);
+    } else {
+      return null;
+    }
   }
 
   Future<int> deleteCategoryItem(int id) async {

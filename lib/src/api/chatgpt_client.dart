@@ -39,8 +39,8 @@ Future<ChatMessage> getChatResponse(String input) async {
   );
 
   if (response.statusCode == 200) {
-    final json = jsonDecode(response.body);
-    final message = json['choices'][0]['text'] as String;
+    final json = jsonDecode(utf8.decode(response.body.codeUnits));
+    String message = json['choices'][0]['text'] as String;
 
     List<String> lines = message.split('\n');
 

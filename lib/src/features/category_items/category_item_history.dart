@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:todo_list_chat_gpt/src/features/category_items/category_item.dart';
 
-import '../../arguments/screen_arguments.dart';
+
 import '../../data/database_helper.dart';
 import '../category_option/category_option.dart';
 import '../todo_list/todo_item_list_view.dart';
@@ -135,12 +135,6 @@ class _CategoryItemListPageState extends State<CategoryItemListPage> {
 
   @override
   Widget build(BuildContext context) {
-    // final arguments = (ModalRoute.of(context)?.settings.arguments ??
-    //     <String, dynamic>{}) as Map;
-
-    // _currentCategory = int.parse(arguments['categoryId'] as String);
-
-    //_getTasks();
 
     return Scaffold(
       appBar: AppBar(

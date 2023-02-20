@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:todo_list_chat_gpt/src/features/category_option/category_option.dart';
-import '../../arguments/screen_arguments.dart';
 import '../../settings/settings_view.dart';
 import '../category_items/category_item_history.dart';
 

@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart';
+import 'package:todo_list_chat_gpt/src/features/category_items/category_item.dart';
 import 'package:todo_list_chat_gpt/src/features/todo_list/todo.dart';
 import '../../api/chatgpt_client.dart';
 import '../../data/database_helper.dart';
 
 class TodoItemListView extends StatefulWidget {
+  const TodoItemListView({super.key});
+
   @override
   _TodoListState createState() => _TodoListState();
   static const routeName = '/todo_item_list';
@@ -12,95 +16,68 @@ class TodoItemListView extends StatefulWidget {
 /// Displays a list of SampleItems.
 class _TodoListState extends State<TodoItemListView> {
   List<Todo> _todoList = [];
+  CategoryItem? _currentCategoryItem;
   bool isLoading = false;
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    _getTasks();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final arguments = (ModalRoute.of(context)!.settings.arguments ??
+          <String, dynamic>{}) as Map;
+
+      final int categoryItemId = int.parse(arguments['itemId'] as String);
+
+      _currentCategoryItem =
+          await DatabaseHelper.instance.getCategoryItemById(categoryItemId);
+
+      _getTasks();
+    });
   }
 
   void _getTasks() async {
-    List<Todo> tasks = await DatabaseHelper.instance.getTasks();
-    setState(() {
-      _todoList = tasks;
-    });
-  }
+    if (_currentCategoryItem != null) {
+      List<Todo> tasks = await DatabaseHelper.instance
+          .getTasksByCategoryItemId(_currentCategoryItem?.id ?? 0);
 
-  void _addTodoItem(String taskName) {
-    setState(() {
-      _todoList.add(Todo(
-          name: taskName,
-          isCompleted: false,
-          id: DateTime.now().millisecondsSinceEpoch));
-    });
-  }
+      if (tasks.isEmpty) {
+        setState(() {
+          isLoading = true;
+        });
+        final ChatMessage response =
+            await getChatResponse(_currentCategoryItem!.title);
 
-  void _removeTodoItem(int index) {
-    setState(() {
-      _todoList.removeAt(index);
-    });
-  }
+        for (String line in response.firstSteps) {
+          final Todo task = Todo(
+              name: line,
+              isCompleted: false,
+              categoryItemId: _currentCategoryItem?.id ?? 0,
+              id: DateTime.now().microsecondsSinceEpoch);
 
-  void _toggleTodoItem(int index) {
-    setState(() {
-      _todoList[index].isCompleted = !_todoList[index].isCompleted;
-    });
-  }
+          await DatabaseHelper.instance.insertTask(task);
 
-  void _showAddTaskDialog() {
-    TextEditingController titleController = TextEditingController();
-    String generatedMessage = '';
+          setState(() {
+            isLoading = false;
+          });
+        }
 
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Nova Tarefa'),
-          content: TextField(
-            autofocus: true,
-            controller: titleController,
-            decoration: const InputDecoration(hintText: 'Título'),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Cancelar'),
-              onPressed: () => Navigator.pop(context),
-            ),
-            TextButton(
-              child: const Text('Adicionar'),
-              onPressed: () async {
-                Navigator.pop(context);
+        for (String line in response.steps) {
+          final Todo task = Todo(
+              name: line,
+              isCompleted: false,
+              categoryItemId: _currentCategoryItem?.id ?? 0,
+              id: DateTime.now().microsecondsSinceEpoch);
 
-                final String text = titleController.text.trim();
+          await DatabaseHelper.instance.insertTask(task);
+        }
 
-                if (text.isEmpty) return;
+        _getTasks();
+      }
 
-                setState(() {
-                  isLoading = true;
-                });
-
-                final response = await getChatResponse(text);
-
-                Todo task = Todo(
-                    name: titleController.text.trim(),
-                    isCompleted: false,
-                    id: DateTime.now().microsecondsSinceEpoch);
-
-                await DatabaseHelper.instance.insertTask(task);
-
-                _getTasks();
-
-                setState(() {
-                  isLoading = false;
-                });
-              },
-            ),
-          ],
-        );
-      },
-    );
+      setState(() {
+        _todoList = tasks;
+      });
+    }
   }
 
   Widget _buildTodoList() {
@@ -108,15 +85,15 @@ class _TodoListState extends State<TodoItemListView> {
       itemCount: _todoList.length,
       itemBuilder: (context, index) {
         return Card(
-          elevation: 2,
-          margin: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
           child: ListTile(
-            contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             title: Text(
               _todoList[index].name,
               style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
                 color:
                     _todoList[index].isCompleted ? Colors.grey : Colors.black,
                 decoration: _todoList[index].isCompleted
@@ -152,15 +129,6 @@ class _TodoListState extends State<TodoItemListView> {
       body: Stack(children: [
         Column(
           children: [
-            TextField(
-              onSubmitted: (String taskName) {
-                _addTodoItem(taskName);
-              },
-              decoration: InputDecoration(
-                hintText: 'Enter a task',
-                contentPadding: EdgeInsets.all(16.0),
-              ),
-            ),
             Expanded(
               child: _buildTodoList(),
             ),
@@ -174,11 +142,6 @@ class _TodoListState extends State<TodoItemListView> {
             ),
           )
       ]),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _showAddTaskDialog,
-        icon: const Icon(Icons.add),
-        label: const Text('Adicionar'),
-      ),
     );
   }
 }
