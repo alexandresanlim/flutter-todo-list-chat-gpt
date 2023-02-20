@@ -116,6 +116,10 @@ class _CategoryItemListPageState extends State<CategoryItemListPage> {
                 const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             title: Text(
               _items[index].title,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             trailing: IconButton(
               icon: const Icon(Icons.delete),

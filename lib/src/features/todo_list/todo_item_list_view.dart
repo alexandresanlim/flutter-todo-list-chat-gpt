@@ -98,7 +98,7 @@ class _TodoListState extends State<TodoItemListView> {
               _todoList[index].name,
               style: TextStyle(
                 fontSize: 16,
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.bold,
                 color:
                     _todoList[index].isCompleted ? Colors.grey : Colors.black,
                 decoration: _todoList[index].isCompleted

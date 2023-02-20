@@ -62,10 +62,16 @@ class CategorieListView extends StatelessWidget {
                   '${item.id}. ${item.title}',
                   style: const TextStyle(
                     fontSize: 16,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-                subtitle: Text(item.description),
+                subtitle: Text(
+                  item.description,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
                 trailing: const Icon(Icons.chevron_right),
                 leading: const CircleAvatar(
                   foregroundImage: AssetImage('assets/images/flutter_logo.png'),

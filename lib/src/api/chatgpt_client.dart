@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:chat_gpt_sdk/chat_gpt_sdk.dart';
 import 'package:http/http.dart' as http;
 
 class ChatMessage {
@@ -8,11 +7,6 @@ class ChatMessage {
   final List<String> steps;
 
   final List<String> firstSteps;
-
-  final openAI = OpenAI.instance.build(
-      token: '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',
-      baseOption: HttpSetup(receiveTimeout: 6000),
-      isLogger: true);
 
   ChatMessage(
       {required this.message, required this.firstSteps, required this.steps});

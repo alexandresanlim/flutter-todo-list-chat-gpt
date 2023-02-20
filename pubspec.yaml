@@ -16,7 +16,7 @@ dependencies:
     sdk: flutter
   sqflite: ^2.0.0
   http: ^0.13.5
-  chat_gpt_sdk: ^2.0.0
+  google_fonts: ^4.0.3
 
 dev_dependencies:
   flutter_test:
