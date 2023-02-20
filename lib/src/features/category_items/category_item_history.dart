@@ -1,10 +1,6 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:todo_list_chat_gpt/src/features/category_items/category_item.dart';
-
-
 import '../../data/database_helper.dart';
-import '../category_option/category_option.dart';
 import '../todo_list/todo_item_list_view.dart';
 
 class CategoryItemListPage extends StatefulWidget {
@@ -18,6 +14,7 @@ class CategoryItemListPage extends StatefulWidget {
 class _CategoryItemListPageState extends State<CategoryItemListPage> {
   List<CategoryItem> _items = [];
   int _currentCategory = 0;
+  String _titlePage = '';
 
   @override
   void initState() {
@@ -28,6 +25,7 @@ class _CategoryItemListPageState extends State<CategoryItemListPage> {
           <String, dynamic>{}) as Map;
 
       _currentCategory = int.parse(arguments['categoryId'] as String);
+      _titlePage = arguments['titlePage'] as String;
 
       _getTasks();
     });
@@ -41,11 +39,11 @@ class _CategoryItemListPageState extends State<CategoryItemListPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Nova Tarefa'),
+          title: const Text('Nova Receita'),
           content: TextField(
             autofocus: true,
             controller: titleController,
-            decoration: const InputDecoration(hintText: 'Bolo de cenoura'),
+            decoration: const InputDecoration(hintText: 'Ex: Bolo de cenoura'),
           ),
           actions: <Widget>[
             TextButton(
@@ -88,6 +86,8 @@ class _CategoryItemListPageState extends State<CategoryItemListPage> {
 
     await DatabaseHelper.instance.deleteCategoryItem(item.id);
 
+    await DatabaseHelper.instance.deleteTasksByCategoryItemId(item.id);
+
     setState(() {
       _items.removeAt(index);
     });
@@ -107,14 +107,15 @@ class _CategoryItemListPageState extends State<CategoryItemListPage> {
       itemBuilder: (context, index) {
         return Card(
           elevation: 2,
-          margin: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           child: ListTile(
-            contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             title: Text(
               _items[index].title,
             ),
             trailing: IconButton(
-              icon: Icon(Icons.delete),
+              icon: const Icon(Icons.delete),
               onPressed: () => _removeItem(index),
             ),
             onTap: () {
@@ -135,10 +136,9 @@ class _CategoryItemListPageState extends State<CategoryItemListPage> {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       appBar: AppBar(
-        title: Text('Lista de Itens'),
+        title: Text(_titlePage),
       ),
       body: Column(children: [
         Expanded(

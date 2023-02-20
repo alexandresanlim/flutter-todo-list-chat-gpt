@@ -7,11 +7,12 @@ class CategorieListView extends StatelessWidget {
   const CategorieListView({
     super.key,
     this.items = const [
-      CategoryOption(1, 'Receita', 'Crie uma lista de a fazer para receitas',
-          CategoryOptionType.recipe),
+      CategoryOption(1, 'Receita', 'Minhas Receitas',
+          'Crie uma lista de a fazer para receitas', CategoryOptionType.recipe),
       CategoryOption(
           2,
           'Plano de estudo',
+          'Meus Planos de estudo',
           'Crie uma lista de a fazer estudar um determinado tema',
           CategoryOptionType.studyPlan)
     ],
@@ -61,7 +62,10 @@ class CategorieListView extends StatelessWidget {
                   Navigator.restorablePushNamed(
                     context,
                     CategoryItemListPage.routeName,
-                    arguments: {'categoryId': categoryId},
+                    arguments: {
+                      'categoryId': categoryId,
+                      'titlePage': item.titlePage
+                    },
                   );
                 }),
           );

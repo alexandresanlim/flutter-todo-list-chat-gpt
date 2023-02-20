@@ -74,6 +74,12 @@ class DatabaseHelper {
     });
   }
 
+  Future<int> deleteTasksByCategoryItemId(int categoryItemId) async {
+    Database db = await database;
+    return await db.delete(table,
+        where: '$columnCategoryItemId = ?', whereArgs: [categoryItemId]);
+  }
+
   Future<int> updateTask(Todo task) async {
     Database db = await database;
     return await db.update(table, task.toMap(),

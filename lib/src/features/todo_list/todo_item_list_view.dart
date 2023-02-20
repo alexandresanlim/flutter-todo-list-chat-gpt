@@ -124,7 +124,7 @@ class _TodoListState extends State<TodoItemListView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('ChatGPT ToDo List'),
+        title: Text(_currentCategoryItem?.title ?? ''),
       ),
       body: Stack(children: [
         Column(
