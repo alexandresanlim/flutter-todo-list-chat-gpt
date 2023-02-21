@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:todo_list_chat_gpt/src/extensions/string_extension.dart';
 import 'package:todo_list_chat_gpt/src/features/category_items/category_item.dart';
+import 'package:todo_list_chat_gpt/src/features/todo_list/todo.dart';
+import '../../api/chatgpt_client.dart';
 import '../../data/database_helper.dart';
-import '../todo_list/todo_item_list_view.dart';
 
 class CategoryItemListPage extends StatefulWidget {
   const CategoryItemListPage({super.key});
@@ -17,6 +19,9 @@ class _CategoryItemListPageState extends State<CategoryItemListPage> {
   String _titlePage = '';
   String _startPrompt = '';
   String _placeHolder = '';
+  List<Todo> _todoList = [];
+  CategoryItem? _currentCategoryItem;
+  bool isLoading = false;
 
   @override
   void initState() {
@@ -58,7 +63,7 @@ class _CategoryItemListPageState extends State<CategoryItemListPage> {
               onPressed: () async {
                 Navigator.pop(context);
 
-                final String text = titleController.text.trim();
+                final String text = titleController.text.trim().capitalize();
 
                 if (text.isEmpty) return;
 
@@ -84,15 +89,38 @@ class _CategoryItemListPageState extends State<CategoryItemListPage> {
     });
   }
 
-  void _removeItem(int index) async {
-    final CategoryItem item = _items.elementAt(index);
+  Future<bool?> _showDeleteConfirmationDialog(CategoryItem item) {
+    return showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Excluir item'),
+        content: Text('Tem certeza que deseja excluir ${item.title}?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Sim'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _removeItem(CategoryItem item) async {
+    final bool confirmation =
+        await _showDeleteConfirmationDialog(item) ?? false;
+
+    if (!confirmation) return;
 
     await DatabaseHelper.instance.deleteCategoryItem(item.id);
 
     await DatabaseHelper.instance.deleteTasksByCategoryItemId(item.id);
 
     setState(() {
-      _items.removeAt(index);
+      _items.remove(item);
     });
   }
 
@@ -104,40 +132,134 @@ class _CategoryItemListPageState extends State<CategoryItemListPage> {
     });
   }
 
-  Widget _buildTodoList() {
-    return ListView.builder(
-      itemCount: _items.length,
-      itemBuilder: (context, index) {
-        return Card(
-          margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-          child: ListTile(
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            title: Text(
-              _items[index].title,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            subtitle: const Text('Conclui'),
-            trailing: IconButton(
-              icon: const Icon(Icons.delete),
-              onPressed: () => _removeItem(index),
-            ),
-            onTap: () {
-              final CategoryItem item = _items.elementAt(index);
+  void _getTasksByCurrentCategoryItem(int index, bool isExpanded) async {
+    if (isExpanded) {
+      setState(() {
+        _items[index].isExpanded = false;
+      });
+      return;
+    }
 
-              final String itemId = item.id.toString();
-              Navigator.restorablePushNamed(
-                context,
-                TodoItemListView.routeName,
-                arguments: {'itemId': itemId, 'startPrompt': _startPrompt},
-              );
-            },
-          ),
-        );
+    if (_currentCategoryItem != null) {
+      List<Todo> tasks = await DatabaseHelper.instance
+          .getTasksByCategoryItemId(_currentCategoryItem?.id ?? 0);
+
+      if (tasks.isEmpty) {
+        setState(() {
+          _items[index].isLoading = true;
+        });
+        final ChatMessage response = await getChatResponse(
+            '$_startPrompt ${_currentCategoryItem!.title}');
+
+        if (response.firstSteps.isNotEmpty) {
+          for (String line in response.firstSteps) {
+            final Todo task = Todo(
+                name: line,
+                isCompleted: false,
+                categoryItemId: _currentCategoryItem?.id ?? 0,
+                id: DateTime.now().microsecondsSinceEpoch);
+
+            await DatabaseHelper.instance.insertTask(task);
+          }
+        }
+
+        if (response.steps.isNotEmpty) {
+          for (String line in response.steps) {
+            final Todo task = Todo(
+                name: line,
+                isCompleted: false,
+                categoryItemId: _currentCategoryItem?.id ?? 0,
+                id: DateTime.now().microsecondsSinceEpoch);
+
+            await DatabaseHelper.instance.insertTask(task);
+          }
+        }
+
+        setState(() {
+          _items[index].isLoading = false;
+        });
+
+        _getTasksByCurrentCategoryItem(index, isExpanded);
+
+        return;
+      }
+
+      setState(() {
+        _todoList = tasks;
+        _items[index].isExpanded = true;
+      });
+    }
+  }
+
+  Widget _buildPanel() {
+    return ExpansionPanelList(
+      expansionCallback: (int index, bool isExpanded) {
+        _currentCategoryItem = _items[index];
+
+        _getTasksByCurrentCategoryItem(index, isExpanded);
       },
+      children: _items.map<ExpansionPanel>((CategoryItem item) {
+        return ExpansionPanel(
+          canTapOnHeader: false,
+          headerBuilder: (BuildContext context, bool isExpanded) {
+            if (item.isLoading) {
+              return ListTile(
+                title: Text(
+                  item.title,
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                subtitle: const Text(
+                  'Buscando lista via ChatGPT 🤖',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                ),
+                leading: const CircularProgressIndicator(),
+              );
+            }
+
+            return ListTile(
+              onLongPress: () => _removeItem(item),
+              title: Text(
+                item.title,
+                style:
+                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+            );
+          },
+          body: Column(
+            children: _todoList.map<Widget>((subItem) {
+              return Card(
+                child: ListTile(
+                  title: Text(
+                    subItem.name,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: subItem.isCompleted ? Colors.grey : Colors.black,
+                      decoration: subItem.isCompleted
+                          ? TextDecoration.lineThrough
+                          : TextDecoration.none,
+                    ),
+                  ),
+                  trailing: Icon(
+                    subItem.isCompleted
+                        ? Icons.check_box
+                        : Icons.check_box_outline_blank,
+                    color: subItem.isCompleted ? Colors.grey : Colors.black,
+                  ),
+                  onTap: () {
+                    setState(() {
+                      subItem.isCompleted = !subItem.isCompleted;
+                      DatabaseHelper.instance.updateTask(subItem);
+                    });
+                  },
+                ),
+              );
+            }).toList(),
+          ),
+          isExpanded: item.isExpanded,
+        );
+      }).toList(),
     );
   }
 
@@ -147,15 +269,18 @@ class _CategoryItemListPageState extends State<CategoryItemListPage> {
       appBar: AppBar(
         title: Text(_titlePage),
       ),
-      body: Column(children: [
-        Expanded(
-          child: _buildTodoList(),
-        )
-      ]),
+      body: SingleChildScrollView(
+        child: Container(
+          child: _buildPanel(),
+        ),
+      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _showAddTaskDialog,
         icon: const Icon(Icons.add),
-        label: const Text('Adicionar'),
+        label: const Text(
+          'Adicionar',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
       ),
     );
   }

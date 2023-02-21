@@ -1,5 +1,3 @@
-import '../../data/database_helper.dart';
-
 class CategoryItem {
   final String title;
   final int id;
@@ -9,8 +7,16 @@ class CategoryItem {
 
   static const tableCategory = 'categoryItem';
 
+  bool isExpanded;
+
+  bool isLoading;
+
   CategoryItem(
-      {required this.title, required this.id, required this.categoryId});
+      {required this.title,
+      required this.id,
+      required this.categoryId,
+      this.isExpanded = false,
+      this.isLoading = false});
 
   Map<String, dynamic> toMap() {
     return {'id': id, 'name': title, columnCategoryCategoryId: categoryId};

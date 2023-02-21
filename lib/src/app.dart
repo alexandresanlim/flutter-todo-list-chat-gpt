@@ -3,14 +3,11 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:todo_list_chat_gpt/src/features/category_items/category_item_history.dart';
-import 'package:todo_list_chat_gpt/src/features/todo_list/todo_item_list_view.dart';
-
 import 'features/category_option/category_option_list.dart';
 import 'sample_feature/sample_item_details_view.dart';
-import 'sample_feature/sample_item_list_view.dart';
 import 'settings/settings_controller.dart';
 import 'settings/settings_view.dart';
-import 'features/todo_list/todo_item_list_view.dart';
+
 
 /// The Widget that configures your application.
 class MyApp extends StatelessWidget {
@@ -81,8 +78,6 @@ class MyApp extends StatelessWidget {
                     return const SampleItemDetailsView();
                   case CategoryItemListPage.routeName:
                     return const CategoryItemListPage();
-                  case TodoItemListView.routeName:
-                    return const TodoItemListView();
                   case CategorieListView.routeName:
                   default:
                     return const CategorieListView();
