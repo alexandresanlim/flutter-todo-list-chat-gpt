@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'chatgpt_configuration.dart';
 
 class ChatMessage {
   final String message;
@@ -17,7 +18,7 @@ Future<ChatMessage> getChatResponse(String input) async {
     Uri.parse('https://api.openai.com/v1/engines/text-davinci-003/completions'),
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': 'Bearer YOUR API KEY HERE',
+      'Authorization': 'Bearer ${ChatGPTConfiguration.apiKey}',
     },
     body: jsonEncode({
       'prompt': input,

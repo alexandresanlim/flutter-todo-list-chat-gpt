@@ -210,7 +210,7 @@ class _CategoryItemListPageState extends State<CategoryItemListPage> {
                       fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 subtitle: const Text(
-                  'Buscando lista via ChatGPT 🤖',
+                  'Buscando tarefas via ChatGPT 🤖',
                   style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                 ),
                 leading: const CircularProgressIndicator(),
