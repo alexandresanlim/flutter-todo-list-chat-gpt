@@ -8,12 +8,9 @@ class DatabaseHelper {
   static const _databaseName = 'todo_database.db';
   static const _databaseVersion = 1;
 
-  static const table = 'tasks';
-
   static const columnId = 'id';
-  static const columnCategoryItemId = 'categoryItemId';
+
   static const columnTitle = 'name';
-  static const columnIsDone = 'isCompleted';
 
   static final DatabaseHelper instance = DatabaseHelper._instance();
 
@@ -35,31 +32,31 @@ class DatabaseHelper {
 
   Future<void> _onCreate(Database db, int version) async {
     await db.execute('''
-      CREATE TABLE $table (
+      CREATE TABLE ${Todo.table}} (
+        ${Todo.columnCategoryItemId} INTEGER NOT NULL,
+        ${Todo.columnIsDone} INTEGER NOT NULL,
         $columnId INTEGER PRIMARY KEY autoincrement,
-        $columnCategoryItemId INTEGER NOT NULL,
-        $columnTitle TEXT NOT NULL,
-        $columnIsDone INTEGER NOT NULL
+        $columnTitle TEXT NOT NULL
       )
     ''');
 
     await db.execute('''
       CREATE TABLE ${CategoryItem.tableCategory} (
+        ${CategoryItem.columnCategoryCategoryId} INTEGER NOT NULL,
         $columnId INTEGER PRIMARY KEY autoincrement,
-        $columnTitle TEXT NOT NULL,
-        ${CategoryItem.columnCategoryCategoryId} INTEGER NOT NULL
+        $columnTitle TEXT NOT NULL
       )
     ''');
   }
 
   Future<int> insertTask(Todo task) async {
     Database db = await database;
-    return await db.insert(table, task.toMap());
+    return await db.insert(Todo.table, task.toMap());
   }
 
   Future<List<Todo>> getTasks() async {
     Database db = await database;
-    List<Map<String, dynamic>> maps = await db.query(table);
+    List<Map<String, dynamic>> maps = await db.query(Todo.table);
     return List.generate(maps.length, (i) {
       return Todo.fromMap(maps[i]);
     });
@@ -67,8 +64,8 @@ class DatabaseHelper {
 
   Future<List<Todo>> getTasksByCategoryItemId(int categoryItemId) async {
     Database db = await database;
-    List<Map<String, dynamic>> maps = await db.query(table,
-        where: '$columnCategoryItemId = ?', whereArgs: [categoryItemId]);
+    List<Map<String, dynamic>> maps = await db.query(Todo.table,
+        where: '${Todo.columnCategoryItemId} = ?', whereArgs: [categoryItemId]);
     return List.generate(maps.length, (i) {
       return Todo.fromMap(maps[i]);
     });
@@ -76,19 +73,19 @@ class DatabaseHelper {
 
   Future<int> deleteTasksByCategoryItemId(int categoryItemId) async {
     Database db = await database;
-    return await db.delete(table,
-        where: '$columnCategoryItemId = ?', whereArgs: [categoryItemId]);
+    return await db.delete(Todo.table,
+        where: '${Todo.columnCategoryItemId} = ?', whereArgs: [categoryItemId]);
   }
 
   Future<int> updateTask(Todo task) async {
     Database db = await database;
-    return await db.update(table, task.toMap(),
+    return await db.update(Todo.table, task.toMap(),
         where: '$columnId = ?', whereArgs: [task.id]);
   }
 
   Future<int> deleteTask(int id) async {
     Database db = await database;
-    return await db.delete(table, where: '$columnId = ?', whereArgs: [id]);
+    return await db.delete(Todo.table, where: '$columnId = ?', whereArgs: [id]);
   }
 
   Future<int> insertCategoryItem(CategoryItem task) async {

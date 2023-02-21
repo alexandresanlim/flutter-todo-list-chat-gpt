@@ -17,8 +17,7 @@ Future<ChatMessage> getChatResponse(String input) async {
     Uri.parse('https://api.openai.com/v1/engines/text-davinci-003/completions'),
     headers: {
       'Content-Type': 'application/json',
-      'Authorization':
-          'Bearer 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',
+      'Authorization': 'Bearer YOUR API KEY HERE',
     },
     body: jsonEncode({
       'prompt': input,
