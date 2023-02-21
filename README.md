@@ -1,3 +1,3 @@
-# todo_list_chat_gpt
+# To Do list with ChatGPT
 
-A new Flutter project.
+To test set your api key on **chatgpt_configuration.dart**.
