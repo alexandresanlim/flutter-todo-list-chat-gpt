@@ -13,21 +13,24 @@ class CategorieListView extends StatelessWidget {
           'Minhas receitas',
           'Crie uma lista de afazeres para suas receitas favoritas',
           'Escreva uma receita para',
-          'Bolo de cenoura'),
+          'Bolo de cenoura',
+          'option_recipe'),
       CategoryOption(
           2,
           'Planos de estudo',
           'Meus planos de estudo',
           'Crie uma lista de afazeres para estudar um determinado tema',
           'Quais os pontos eu deveria saber para estudar',
-          'Império romano'),
+          'Império romano',
+          'option_study'),
       CategoryOption(
           3,
           'Tarefas',
           'Minhas tarefas',
           'Crie uma lista de afazeres para tarefas do seu cotidiano',
           'Crie uma lista de tarefas para',
-          'Limpar a casa')
+          'Limpar a casa',
+          'option_task')
     ],
   });
 
@@ -58,11 +61,14 @@ class CategorieListView extends StatelessWidget {
           return Card(
             child: ListTile(
                 contentPadding: const EdgeInsets.all(12),
-                title: Text(
-                  '${item.id}. ${item.title}',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+                title: Padding(
+                  padding: const EdgeInsets.only(bottom: 4.0),
+                  child: Text(
+                    '${item.id}. ${item.title}',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
                 subtitle: Text(
@@ -73,8 +79,9 @@ class CategorieListView extends StatelessWidget {
                   ),
                 ),
                 trailing: const Icon(Icons.chevron_right),
-                leading: const CircleAvatar(
-                  foregroundImage: AssetImage('assets/images/flutter_logo.png'),
+                leading: CircleAvatar(
+                  foregroundImage:
+                      AssetImage('assets/images/${item.image}.png'),
                 ),
                 onTap: () {
                   final String categoryId = item.id.toString();

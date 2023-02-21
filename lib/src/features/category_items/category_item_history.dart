@@ -109,8 +109,7 @@ class _CategoryItemListPageState extends State<CategoryItemListPage> {
       itemCount: _items.length,
       itemBuilder: (context, index) {
         return Card(
-          elevation: 2,
-          margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
           child: ListTile(
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -121,6 +120,7 @@ class _CategoryItemListPageState extends State<CategoryItemListPage> {
                 fontWeight: FontWeight.bold,
               ),
             ),
+            subtitle: const Text('Conclui'),
             trailing: IconButton(
               icon: const Icon(Icons.delete),
               onPressed: () => _removeItem(index),
