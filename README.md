@@ -1,4 +1,4 @@
-# To Do list with ChatGPT
+# ToDo list with ChatGPT
 
 - A simple todo llist app using ChatGPT to generage tasks.
 - To test set your api key on **chatgpt_configuration.dart**.
