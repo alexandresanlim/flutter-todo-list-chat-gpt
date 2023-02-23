@@ -1,7 +1,7 @@
 # ToDo list with ChatGPT
 
 - A simple todo llist app using ChatGPT to generage tasks.
-- To test set your api key on **chatgpt_configuration.dart**.
+- To test set your api key on [chatgpt_configuration.dart](https://github.com/alexandresanlim/flutter-todo-list-chat-gpt/blob/master/lib/src/api/chatgpt_configuration.dart).
 
 
 
